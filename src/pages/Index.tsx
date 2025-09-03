@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState({ name: 'Иван Иванов', username: 'ivan_user' });
   const [activeTab, setActiveTab] = useState('chats');
   const [selectedChat, setSelectedChat] = useState(null);
   const [message, setMessage] = useState('');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  
+  // Auth states
+  const [authMode, setAuthMode] = useState('login');
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [registerData, setRegisterData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    fullName: ''
+  });
 
   const chats = [
     { id: 1, name: 'Анна Петрова', lastMessage: 'Привет! Как дела?', time: '14:30', unread: 3, online: true },
@@ -35,6 +50,260 @@ const Index = () => {
   const emojis = ['😊', '😂', '❤️', '👍', '😍', '🎉', '🔥', '💯'];
   const stickers = ['🐱', '🐶', '🦊', '🐸', '🐼', '🦄', '🐯', '🐻'];
 
+  // Auth functions
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setIsLoggedIn(true);
+    setLoginData({ email: '', password: '' });
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setCurrentUser({ name: registerData.fullName, username: registerData.username });
+    setIsLoggedIn(true);
+    setRegisterData({ username: '', email: '', password: '', fullName: '' });
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setSelectedChat(null);
+    setIsFullScreen(false);
+  };
+
+  const handleChatClick = (chat) => {
+    setSelectedChat(chat);
+    setIsFullScreen(true);
+  };
+
+  const handleBackToChats = () => {
+    setIsFullScreen(false);
+  };
+
+  // Auth screen
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Icon name="MessageCircle" size={48} className="mx-auto text-primary mb-4" />
+            <CardTitle className="text-2xl">Добро пожаловать</CardTitle>
+            <CardDescription>Войдите в свой аккаунт или создайте новый</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={authMode} onValueChange={setAuthMode}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Вход</TabsTrigger>
+                <TabsTrigger value="register">Регистрация</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login" className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Пароль</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    <Icon name="LogIn" size={16} className="mr-2" />
+                    Войти
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register" className="space-y-4">
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Полное имя</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Иван Иванов"
+                      value={registerData.fullName}
+                      onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Имя пользователя</Label>
+                    <Input
+                      id="username"
+                      placeholder="username"
+                      value={registerData.username}
+                      onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="registerEmail">Email</Label>
+                    <Input
+                      id="registerEmail"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={registerData.email}
+                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="registerPassword">Пароль</Label>
+                    <Input
+                      id="registerPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={registerData.password}
+                      onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    <Icon name="UserPlus" size={16} className="mr-2" />
+                    Создать аккаунт
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Full screen chat mode
+  if (isFullScreen && selectedChat) {
+    return (
+      <div className="h-screen bg-background flex flex-col">
+        {/* Chat Header */}
+        <div className="p-4 border-b border-border bg-card">
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" onClick={handleBackToChats}>
+              <Icon name="ArrowLeft" size={16} />
+            </Button>
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className={selectedChat.isGroup ? "bg-green-500 text-white" : "bg-primary text-primary-foreground"}>
+                {selectedChat.isGroup ? <Icon name="Users" size={16} /> : selectedChat.name.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h2 className="font-semibold text-sm">{selectedChat.name}</h2>
+              <p className="text-xs text-muted-foreground">
+                {selectedChat.online ? 'В сети' : 'Был в сети недавно'}
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <Button variant="ghost" size="sm">
+                <Icon name="Phone" size={16} />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Icon name="Video" size={16} />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Icon name="MoreVertical" size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                msg.sender === 'me' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-foreground'
+              }`}>
+                <p className="text-sm">{msg.text}</p>
+                <p className={`text-xs mt-1 ${
+                  msg.sender === 'me' 
+                    ? 'text-primary-foreground/70' 
+                    : 'text-muted-foreground'
+                }`}>
+                  {msg.time}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Emoji and Stickers */}
+        <div className="p-2 border-t border-border bg-card">
+          <div className="flex space-x-2 mb-2">
+            <div className="flex space-x-1">
+              {emojis.map((emoji, index) => (
+                <Button
+                  key={index}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-lg hover:bg-muted"
+                  onClick={() => setMessage(prev => prev + emoji)}
+                >
+                  {emoji}
+                </Button>
+              ))}
+            </div>
+            <div className="flex space-x-1">
+              {stickers.map((sticker, index) => (
+                <Button
+                  key={index}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-lg hover:bg-muted"
+                  onClick={() => setMessage(prev => prev + sticker)}
+                >
+                  {sticker}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Message Input */}
+        <div className="p-4 border-t border-border bg-card">
+          <div className="flex space-x-2">
+            <Button variant="ghost" size="sm">
+              <Icon name="Paperclip" size={16} />
+            </Button>
+            <Input
+              placeholder="Написать сообщение..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="flex-1"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && message.trim()) {
+                  setMessage('');
+                }
+              }}
+            />
+            <Button 
+              size="sm" 
+              disabled={!message.trim()}
+              onClick={() => setMessage('')}
+            >
+              <Icon name="Send" size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main messenger interface
   return (
     <div className="h-screen bg-background flex">
       {/* Sidebar */}
@@ -65,7 +334,7 @@ const Index = () => {
                 className={`p-4 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${
                   selectedChat?.id === chat.id ? 'bg-muted' : ''
                 }`}
-                onClick={() => setSelectedChat(chat)}
+                onClick={() => handleChatClick(chat)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
@@ -107,7 +376,7 @@ const Index = () => {
                 className={`p-4 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${
                   selectedChat?.id === chat.id ? 'bg-muted' : ''
                 }`}
-                onClick={() => setSelectedChat(chat)}
+                onClick={() => handleChatClick(chat)}
               >
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-12 w-12">
@@ -172,17 +441,17 @@ const Index = () => {
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">ВИ</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-lg font-semibold">Ваше Имя</h2>
-                <p className="text-sm text-muted-foreground">@username</p>
+                <h2 className="text-lg font-semibold">{currentUser.name}</h2>
+                <p className="text-sm text-muted-foreground">@{currentUser.username}</p>
               </div>
               <div className="space-y-2">
                 <Button variant="outline" className="w-full">
                   <Icon name="Edit" size={16} className="mr-2" />
                   Редактировать профиль
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleLogout}>
                   <Icon name="LogOut" size={16} className="mr-2" />
-                  Выйти
+                  Выйти из аккаунта
                 </Button>
               </div>
             </div>
